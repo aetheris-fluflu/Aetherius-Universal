@@ -13,7 +13,7 @@ Frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 
 ScrollingFrame.Parent = Frame
 ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 3, 0)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
 ScrollingFrame.ScrollBarThickness = 5
 
 Title.Parent = Frame
@@ -78,57 +78,167 @@ function createButton(name, callback)
     end)
 end
 
-local function godModeFunction(enabled)
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character then return end
-
+local function espFunction(enabled)
     if enabled then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.MaxHealth = math.huge
-            humanoid.Health = math.huge
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local highlight = Instance.new("Highlight")
+                highlight.Parent = player.Character
+                highlight.FillColor = Color3.new(1, 0, 0)
+                highlight.OutlineColor = Color3.new(1, 1, 1)
+            end
         end
     else
-        if character:FindFirstChildOfClass("Humanoid") then
-            character.Humanoid.MaxHealth = 100
-            character.Humanoid.Health = 100
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Character then
+                for _, v in pairs(player.Character:GetChildren()) do
+                    if v:IsA("Highlight") then
+                        v:Destroy()
+                    end
+                end
+            end
         end
     end
 end
 
-local function clickTPFunction(enabled)
-    local UIS = game:GetService("UserInputService")
-    local player = game.Players.LocalPlayer
-
+local function flyFunction(enabled)
+    local character = game.Players.LocalPlayer.Character
     if enabled then
-        UIS.InputBegan:Connect(function(input, gameProcessed)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessed then
-                local mouse = player:GetMouse()
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p)
+        local fly = Instance.new("BodyVelocity")
+        fly.Velocity = Vector3.new(0, 50, 0)
+        fly.MaxForce = Vector3.new(4000, 4000, 4000)
+        fly.Name = "FlyVelocity"
+        fly.Parent = character.HumanoidRootPart
+    else
+        if character.HumanoidRootPart:FindFirstChild("FlyVelocity") then
+            character.HumanoidRootPart.FlyVelocity:Destroy()
+        end
+    end
+end
+
+local function noclipFunction(enabled)
+    game:GetService("RunService").Stepped:Connect(function()
+        if enabled then
+            for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                end
+            end
+        end
+    end)
+end
+
+local function speedHackFunction(enabled)
+    local character = game.Players.LocalPlayer.Character
+    if enabled then
+        character.Humanoid.WalkSpeed = 100
+    else
+        character.Humanoid.WalkSpeed = 16
+    end
+end
+
+local function jumpPowerFunction(enabled)
+    local character = game.Players.LocalPlayer.Character
+    if enabled then
+        character.Humanoid.JumpPower = 150
+    else
+        character.Humanoid.JumpPower = 50
+    end
+end
+
+local function infiniteJumpFunction(enabled)
+    local UIS = game:GetService("UserInputService")
+    local character = game.Players.LocalPlayer.Character
+    if enabled then
+        UIS.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                if input.KeyCode == Enum.KeyCode.Space then
+                    character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                    character.Humanoid:Move(Vector3.new(0, 100, 0))
                 end
             end
         end)
     end
 end
 
-local function freezePlayerFunction()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.Anchored = not player.Character.HumanoidRootPart.Anchored
+local function gravityControlFunction(enabled)
+    if enabled then
+        game.Workspace.Gravity = 20
+    else
+        game.Workspace.Gravity = 196.2
+    end
+end
+
+local function walkOnWaterFunction(enabled)
+    local character = game.Players.LocalPlayer.Character
+    if enabled then
+        character.HumanoidRootPart.CanCollide = false
+    else
+        character.HumanoidRootPart.CanCollide = true
+    end
+end
+
+local function antiRagdollFunction(enabled)
+    local character = game.Players.LocalPlayer.Character
+    if enabled then
+        for _, joint in ipairs(character:FindFirstChildOfClass("Model"):GetChildren()) do
+            if joint:IsA("Motor6D") then
+                joint:Destroy()
+            end
+        end
+    end
+end
+
+local function resetCharacterFunction()
+    local character = game.Players.LocalPlayer.Character
+    character:BreakJoints()
+end
+
+local function godModeFunction(enabled)
+    local humanoid = game.Players.LocalPlayer.Character.Humanoid
+    if enabled then
+        humanoid.MaxHealth = math.huge
+        humanoid.Health = math.huge
+    else
+        humanoid.MaxHealth = 100
+        humanoid.Health = 100
+    end
+end
+
+local function clickTPFunction(enabled)
+    local UIS = game:GetService("UserInputService")
+    if enabled then
+        UIS.InputBegan:Connect(function(input, gameProcessed)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessed then
+                local mouse = game.Players.LocalPlayer:GetMouse()
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p)
+            end
+        end)
+    end
+end
+
+local function freezePlayerFunction(enabled)
+    if enabled then
+        local character = game.Players.LocalPlayer.Character
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = true
+        end
+    else
+        local character = game.Players.LocalPlayer.Character
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = false
+        end
     end
 end
 
 local function noFallDamageFunction(enabled)
-    local player = game.Players.LocalPlayer
+    local character = game.Players.LocalPlayer.Character
     if enabled then
-        player.Character.Humanoid.StateChanged:Connect(function(_, newState)
-            if newState == Enum.HumanoidStateType.Freefall then
-                task.wait()
-                player.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
-            end
-        end)
+        character.Humanoid.FallDamage = 0
+    else
+        character.Humanoid.FallDamage = 50
     end
 end
 
@@ -144,36 +254,18 @@ local function viewPlayerFunction()
     end
 end
 
-local function giveBToolsFunction()
-    local backpack = game.Players.LocalPlayer.Backpack
-    local hammer = Instance.new("HopperBin", backpack)
-    local cloneTool = Instance.new("HopperBin", backpack)
-    local grabTool = Instance.new("HopperBin", backpack)
-
-    hammer.BinType = Enum.BinType.Hammer
-    cloneTool.BinType = Enum.BinType.Clone
-    grabTool.BinType = Enum.BinType.Grab
-end
-
-local function flingPlayerFunction()
-    local player = game.Players.LocalPlayer
-    local target = game.Players:GetPlayers()[math.random(1, #game.Players:GetPlayers())]
-
-    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        local force = Instance.new("BodyVelocity")
-        force.Velocity = Vector3.new(0, 500, 0)
-        force.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        force.Parent = target.Character.HumanoidRootPart
-
-        task.wait(0.5)
-        force:Destroy()
-    end
-end
-
+createButton("ESP", espFunction)
+createButton("Fly", flyFunction)
+createButton("Noclip", noclipFunction)
+createButton("Speed Hack", speedHackFunction)
+createButton("Jump Power", jumpPowerFunction)
+createButton("Infinite Jump", infiniteJumpFunction)
+createButton("Gravity Control", gravityControlFunction)
+createButton("Walk on Water", walkOnWaterFunction)
+createButton("Anti-Ragdoll", antiRagdollFunction)
+createButton("Reset Character", resetCharacterFunction)
 createButton("God Mode", godModeFunction)
 createButton("Click TP", clickTPFunction)
 createButton("Freeze Player", freezePlayerFunction)
 createButton("No Fall Damage", noFallDamageFunction)
 createButton("View Player", viewPlayerFunction)
-createButton("BTools (Client Only)", giveBToolsFunction)
-createButton("Fling Player", flingPlayerFunction)
