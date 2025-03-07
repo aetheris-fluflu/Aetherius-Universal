@@ -78,133 +78,102 @@ function createButton(name, callback)
     end)
 end
 
-local function flyFunction(enabled)
+local function godModeFunction(enabled)
     local player = game.Players.LocalPlayer
     local character = player.Character
     if not character then return end
 
     if enabled then
-        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-        if humanoidRootPart then
-            local fly = Instance.new("BodyVelocity")
-            fly.Velocity = Vector3.new(0, 50, 0)
-            fly.MaxForce = Vector3.new(4000, 4000, 4000)
-            fly.Name = "FlyVelocity"
-            fly.Parent = humanoidRootPart
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.MaxHealth = math.huge
+            humanoid.Health = math.huge
         end
     else
-        if character:FindFirstChild("HumanoidRootPart"):FindFirstChild("FlyVelocity") then
-            character.HumanoidRootPart.FlyVelocity:Destroy()
+        if character:FindFirstChildOfClass("Humanoid") then
+            character.Humanoid.MaxHealth = 100
+            character.Humanoid.Health = 100
         end
     end
 end
 
-local noclipEnabled = false
-local function noclipFunction(enabled)
-    noclipEnabled = enabled
-    game:GetService("RunService").Stepped:Connect(function()
-        if noclipEnabled then
-            for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = false
-                end
-            end
-        end
-    end)
-end
-
-local function espFunction(enabled)
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            if enabled then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "ESP"
-                highlight.FillColor = Color3.new(1, 0, 0)
-                highlight.FillTransparency = 0.5
-                highlight.Parent = player.Character
-            else
-                if player.Character:FindFirstChild("ESP") then
-                    player.Character.ESP:Destroy()
-                end
-            end
-        end
-    end
-end
-
-local function speedFunction(enabled)
+local function clickTPFunction(enabled)
+    local UIS = game:GetService("UserInputService")
     local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-        if enabled then
-            player.Character.Humanoid.WalkSpeed = 100
-        else
-            player.Character.Humanoid.WalkSpeed = 16
-        end
-    end
-end
 
-local function jumpFunction(enabled)
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-        if enabled then
-            player.Character.Humanoid.JumpPower = 150
-        else
-            player.Character.Humanoid.JumpPower = 50
-        end
-    end
-end
-
-local infiniteJump = false
-game.UserInputService.JumpRequest:Connect(function()
-    if infiniteJump then
-        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-
-local function infiniteJumpFunction(enabled)
-    infiniteJump = enabled
-end
-
-local function gravityFunction(enabled)
     if enabled then
-        game.Workspace.Gravity = 30
-    else
-        game.Workspace.Gravity = 196.2
+        UIS.InputBegan:Connect(function(input, gameProcessed)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 and not gameProcessed then
+                local mouse = player:GetMouse()
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p)
+                end
+            end
+        end)
     end
 end
 
-local function walkOnWaterFunction(enabled)
+local function freezePlayerFunction()
     local player = game.Players.LocalPlayer
-    if player.Character then
-        for _, part in pairs(player.Character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = enabled
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.Anchored = not player.Character.HumanoidRootPart.Anchored
+    end
+end
+
+local function noFallDamageFunction(enabled)
+    local player = game.Players.LocalPlayer
+    if enabled then
+        player.Character.Humanoid.StateChanged:Connect(function(_, newState)
+            if newState == Enum.HumanoidStateType.Freefall then
+                task.wait()
+                player.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
             end
+        end)
+    end
+end
+
+local function viewPlayerFunction()
+    local players = game.Players:GetPlayers()
+    local player = game.Players.LocalPlayer
+    for _, target in ipairs(players) do
+        if target ~= player then
+            player.CameraMode = Enum.CameraMode.LockFirstPerson
+            player.CameraSubject = target.Character.Humanoid
+            break
         end
     end
 end
 
-local function antiRagdollFunction(enabled)
+local function giveBToolsFunction()
+    local backpack = game.Players.LocalPlayer.Backpack
+    local hammer = Instance.new("HopperBin", backpack)
+    local cloneTool = Instance.new("HopperBin", backpack)
+    local grabTool = Instance.new("HopperBin", backpack)
+
+    hammer.BinType = Enum.BinType.Hammer
+    cloneTool.BinType = Enum.BinType.Clone
+    grabTool.BinType = Enum.BinType.Grab
+end
+
+local function flingPlayerFunction()
     local player = game.Players.LocalPlayer
-    if player.Character then
-        for _, v in pairs(player.Character:GetChildren()) do
-            if v:IsA("Humanoid") then
-                v:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, not enabled)
-            end
-        end
+    local target = game.Players:GetPlayers()[math.random(1, #game.Players:GetPlayers())]
+
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local force = Instance.new("BodyVelocity")
+        force.Velocity = Vector3.new(0, 500, 0)
+        force.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        force.Parent = target.Character.HumanoidRootPart
+
+        task.wait(0.5)
+        force:Destroy()
     end
 end
 
-local function resetFunction()
-    game.Players.LocalPlayer.Character:BreakJoints()
-end
-
-createButton("Fly", flyFunction)
-createButton("Noclip", noclipFunction)
-createButton("ESP", espFunction)
-createButton("Speed Hack", speedFunction)
-createButton("Jump Power", jumpFunction)
-createButton("Infinite Jump", infiniteJumpFunction)
-createButton("Gravity Control", gravityFunction)
-createButton("Walk on Water", walkOnWaterFunction)
-createButton("Anti-Ragdoll", antiRagdollFunction)
-createButton("Reset Character", resetFunction)
+createButton("God Mode", godModeFunction)
+createButton("Click TP", clickTPFunction)
+createButton("Freeze Player", freezePlayerFunction)
+createButton("No Fall Damage", noFallDamageFunction)
+createButton("View Player", viewPlayerFunction)
+createButton("BTools (Client Only)", giveBToolsFunction)
+createButton("Fling Player", flingPlayerFunction)
