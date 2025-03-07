@@ -1,6 +1,9 @@
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local ScrollingFrame = Instance.new("ScrollingFrame")
+local Title = Instance.new("TextLabel")
+local Welcome = Instance.new("TextLabel")
+local ToggleButton = Instance.new("ImageButton")
 
 ScreenGui.Parent = game.CoreGui
 Frame.Parent = ScreenGui
@@ -10,8 +13,45 @@ Frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 
 ScrollingFrame.Parent = Frame
 ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 2.5, 0)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 3, 0)
 ScrollingFrame.ScrollBarThickness = 5
+
+Title.Parent = Frame
+Title.Size = UDim2.new(0, 200, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, -35)
+Title.BackgroundTransparency = 1
+Title.Text = "Aetherius Universal"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+
+Welcome.Parent = Frame
+Welcome.Size = UDim2.new(0, 200, 0, 30)
+Welcome.Position = UDim2.new(0, 10, 0, -10)
+Welcome.BackgroundTransparency = 1
+Welcome.Font = Enum.Font.SourceSansBold
+Welcome.TextSize = 20
+Welcome.Text = "Welcome, " .. game.Players.LocalPlayer.Name
+Welcome.TextColor3 = Color3.fromRGB(255, 0, 0)
+
+task.spawn(function()
+    while true do
+        for i = 0, 1, 0.01 do
+            Welcome.TextColor3 = Color3.fromHSV(i, 1, 1)
+            task.wait(0.02)
+        end
+    end
+end)
+
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+ToggleButton.Position = UDim2.new(0.9, 0, 0.1, 0)
+ToggleButton.Image = "http://www.roblox.com/asset/?id=108802284870895"
+ToggleButton.Draggable = true
+
+ToggleButton.MouseButton1Click:Connect(function()
+    Frame.Visible = not Frame.Visible
+end)
 
 function createButton(name, callback)
     local Button = Instance.new("TextButton")
@@ -124,10 +164,38 @@ local function infiniteJumpFunction(enabled)
     infiniteJump = enabled
 end
 
-local function teleportToPlayer()
+local function gravityFunction(enabled)
+    if enabled then
+        game.Workspace.Gravity = 30
+    else
+        game.Workspace.Gravity = 196.2
+    end
+end
+
+local function walkOnWaterFunction(enabled)
     local player = game.Players.LocalPlayer
-    local tpGui = Instance.new("ScreenGui", ScreenGui)
-    local tpFrame = Instance.new("Frame", tpGui)
+    if player.Character then
+        for _, part in pairs(player.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = enabled
+            end
+        end
+    end
+end
+
+local function antiRagdollFunction(enabled)
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        for _, v in pairs(player.Character:GetChildren()) do
+            if v:IsA("Humanoid") then
+                v:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, not enabled)
+            end
+        end
+    end
+end
+
+local function resetFunction()
+    game.Players.LocalPlayer.Character:BreakJoints()
 end
 
 createButton("Fly", flyFunction)
@@ -136,3 +204,7 @@ createButton("ESP", espFunction)
 createButton("Speed Hack", speedFunction)
 createButton("Jump Power", jumpFunction)
 createButton("Infinite Jump", infiniteJumpFunction)
+createButton("Gravity Control", gravityFunction)
+createButton("Walk on Water", walkOnWaterFunction)
+createButton("Anti-Ragdoll", antiRagdollFunction)
+createButton("Reset Character", resetFunction)
